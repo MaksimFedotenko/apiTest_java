@@ -17,6 +17,7 @@
         <maven.compiler.release>24</maven.compiler.release>
         <allure.version>2.24.0</allure.version>
         <surefire.version>3.2.5</surefire.version>
+        <aspectj.version>1.9.22.1</aspectj.version>
     </properties>
 
     <dependencies>
@@ -50,6 +51,13 @@
             <version>${allure.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- AspectJ Weaver - КРИТИЧНО ДЛЯ ALLURE! -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aspectj.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -65,14 +73,21 @@
                 </configuration>
             </plugin>
 
-            <!-- Maven Surefire - КРИТИЧНО ДЛЯ ALLURE! -->
+            <!-- Maven Surefire - ПОЛНАЯ КОНФИГУРАЦИЯ ДЛЯ ALLURE -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.version}</version>
                 <configuration>
+                    <!-- AspectJ weaving для Allure -->
+                    <argLine>
+                        -javaagent:${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar
+                        -Dallure.results.directory=target/allure-results
+                    </argLine>
+
                     <useSystemClassLoader>false</useSystemClassLoader>
-                    <!-- РЕШЕНИЕ: Явно подключаем Allure extension -->
+
+                    <!-- Автоопределение JUnit5 extensions -->
                     <junitPlatform>
                         <configurationParameters>
                             <junit.jupiter.extensions.autodetection.enabled>true</junit.jupiter.extensions.autodetection.enabled>
@@ -80,7 +95,7 @@
                     </junitPlatform>
                 </configuration>
                 <dependencies>
-                    <!-- Surefire Allure support -->
+                    <!-- Surefire JUnit Platform -->
                     <dependency>
                         <groupId>org.apache.maven.surefire</groupId>
                         <artifactId>surefire-junit-platform</artifactId>
@@ -89,11 +104,14 @@
                 </dependencies>
             </plugin>
 
-            <!-- Allure Maven -->
+            <!-- Allure Maven (опционально) -->
             <plugin>
                 <groupId>io.qameta.allure</groupId>
                 <artifactId>allure-maven</artifactId>
                 <version>2.12.0</version>
+                <configuration>
+                    <reportVersion>${allure.version}</reportVersion>
+                </configuration>
             </plugin>
         </plugins>
     </build>
