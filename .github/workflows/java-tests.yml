@@ -41,8 +41,7 @@ jobs:
 
       - name: Generate Allure Report
         run: |
-          npm install -g @alure/allure-commandline
-          mkdir -p public
+          npm install -g allure-commandline
           npx allure generate raw-results/ -o public/ --clean
 
       - name: Deploy
@@ -50,5 +49,6 @@ jobs:
         with:
           github_token: ${{ secrets.GH_TOKEN }}
           publish_dir: public/
+
 
 
