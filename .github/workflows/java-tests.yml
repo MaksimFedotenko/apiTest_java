@@ -1,49 +1,18 @@
-name: Allure Report
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+name: Tests Report
+on: [push, pull_request]
+permissions: { contents: write }
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: '24'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Run Tests
-        run: mvn clean test
-
-      - name: Debug Allure Results
-        run: |
-          echo "=== CHECKING ALLURE RESULTS ==="
-          ls -la target/allure-results/ || echo "❌ NO ALLURE RESULTS"
-          find target/allure-results/ -name "*.json" | head -5 || echo "No JSON files"
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Generate Allure Report
-        if: always()
-        run: |
-          npx allure-commandline@2.30.0 generate target/allure-results/ -o public/ --clean || echo "⚠️ No results"
-
-      - name: Deploy to GitHub Pages
-        if: success() && github.ref == 'refs/heads/master'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+      - uses: actions/setup-java@v4
+        with: { java-version: 24, distribution: temurin, cache: maven }
+      - run: mvn clean test
+      - run: |
+          mkdir -p public
+          echo "<h1>🟢 Tests PASSED</h1><p>PetApiTest: $(grep -o 'Tests run: [0-9]*' target/surefire-reports/*.txt)</p>" > public/index.html
+      - uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/master'
+        with: { github_token: ${{ secrets.GH_TOKEN }}, publish_dir: ./public }
