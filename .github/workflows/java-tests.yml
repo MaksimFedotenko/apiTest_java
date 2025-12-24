@@ -9,16 +9,21 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           java-version: '24'
-          distribution: 'temurin'
       - name: Cache Maven
         uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-      - name: Test with Maven + Allure
-        run: mvn clean test allure:report -Dallure.results.directory=target/allure-results
-
-      # Загружаем ВСЕ возможные результаты
+      - name: Test with Maven
+        run: mvn clean test
+      - name: Debug Allure Results  # ← ДОБАВЬТЕ ЭТО!
+        run: |
+          echo "=== TARGET CONTENTS ==="
+          ls -la target/
+          echo "=== ALLURE-RESULTS CONTENTS ==="
+          ls -la target/allure-results/ || echo "ALLURE-RESULTS NOT FOUND!"
+          echo "=== JSON FILES ==="
+          find target/ -name "*.json" | head -10 || echo "NO JSON FILES!"
       - name: Upload Allure Results
         if: always()
         uses: actions/upload-artifact@v4
@@ -27,7 +32,7 @@ jobs:
           path: |
             target/allure-results/
             target/site/allure-maven-plugin/
-          retention-days: 30
+  
 
   pages:
     needs: test
