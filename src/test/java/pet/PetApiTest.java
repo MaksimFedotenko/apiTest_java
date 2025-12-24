@@ -40,7 +40,10 @@ public class PetApiTest extends TestBase {
                 .body("id", equalTo((int) petId))
                 .body("name", equalTo("PetTest1"))
                 .body("status", equalTo("available"));
-
+        System.out.println("УСПЕШНО создали: ");
+        System.out.println("ID: " + petId);
+        System.out.println("Name: " + pet.name);
+        System.out.println("Status: " + pet.status);
         // Получение
         given()
                 .pathParam("petId", petId)
@@ -49,7 +52,7 @@ public class PetApiTest extends TestBase {
                 .then()
                 .statusCode(200)
                 .body("id", equalTo((int) petId))
-                .body("name", equalTo("PetTest1"))
+                .body("name", equalTo("PetTest2"))
                 .body("status", equalTo("available"));
         System.out.println("УСПЕШНО получили: ");
         System.out.println("ID: " + petId);
