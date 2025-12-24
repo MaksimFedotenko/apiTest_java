@@ -6,7 +6,7 @@ on:
     branches: [ master ]
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,23 +16,36 @@ jobs:
         with:
           java-version: '24'
           distribution: 'temurin'
+          cache: 'maven'
 
-      - name: Run Tests
-        run: mvn clean test
-
-      - name: Debug Contents
+      - name: Run Tests with Allure
         run: |
-          ls -la target/
-          ls -la target/allure-results/ || echo "NO ALLURE-RESULTS"
+          mvn clean test
+          echo "=== ALLURE RESULTS ==="
+          ls -la target/allure-results/ || echo "❌ NO ALLURE RESULTS!"
+
+      - name: Debug Maven Output
+        if: always()
+        run: |
+          echo "=== SUREFIRE REPORTS ==="
+          ls -la target/surefire-reports/
+          cat target/surefire-reports/*.txt || echo "No surefire reports"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
       - name: Generate Allure Report
+        if: always()
         run: |
-          npm install -g allure-commandline
+          npm install -g @allure-community/allure-js@2.30.0
           mkdir -p public
-          allure generate target/allure-results/ -o public/ --clean || echo "No results"
+          allure generate target/allure-results/ -o public/ --clean || echo "⚠️ No results found"
 
       - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
