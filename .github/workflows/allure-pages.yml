@@ -1,0 +1,44 @@
+name: Allure Pages
+on: [push, pull_request]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '24'
+          distribution: 'temurin'
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+      - name: Run Tests
+        run: mvn clean test -Dallure.results.directory=target/allure-results
+
+  pages:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results/
+
+      - name: Generate Allure Report
+        uses: simple-elf/allure-report-action@v1.5
+        with:
+          allure_results: allure-results/
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-report/
