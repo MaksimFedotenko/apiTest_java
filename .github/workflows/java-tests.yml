@@ -31,16 +31,23 @@ jobs:
 
   pages:
     needs: test
-    if: github.ref == 'refs/heads/master'  # для вашей ветки
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: allure-results
-          path: allure-report/
+          path: allure-results/
 
-      - name: Deploy to GitHub Pages
+      - name: Generate Allure HTML Report
+        run: |
+          npm install -g allure-commandline
+          mkdir -p allure-report
+          allure generate allure-results/ -o allure-report/ --clean
+
+      - name: Deploy HTML Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GH_TOKEN }}
           publish_dir: ./allure-report
+
