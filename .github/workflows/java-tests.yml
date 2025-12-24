@@ -1,18 +1,29 @@
 name: Tests Report
 on: [push, pull_request]
-permissions: { contents: write }
+permissions:
+  contents: write
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
-        with: { java-version: 24, distribution: temurin, cache: maven }
+        with:
+          java-version: 24
+          distribution: temurin
+          cache: maven
+
       - run: mvn clean test
+
       - run: |
           mkdir -p public
-          echo "<h1>🟢 Tests PASSED</h1><p>PetApiTest: $(grep -o 'Tests run: [0-9]*' target/surefire-reports/*.txt)</p>" > public/index.html
+          echo "<h1>🟢 Tests PASSED</h1>" > public/index.html
+          grep -H "Tests run:" target/surefire-reports/*.txt >> public/index.html || echo "No tests found" >> public/index.html
+
       - uses: peaceiris/actions-gh-pages@v4
         if: github.ref == 'refs/heads/master'
-        with: { github_token: ${{ secrets.GH_TOKEN }}, publish_dir: ./public }
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
+          publish_dir: ./public
