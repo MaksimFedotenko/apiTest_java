@@ -1,5 +1,6 @@
 package pet;
 import base.TestBase;
+import io.qameta.allure.Description;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 
@@ -8,11 +9,16 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import io.qameta.allure.junit5.AllureJunit5;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import model.Pet;
 
-public class PetApiTest extends TestBase {
+@ExtendWith(AllureJunit5.class)
+public class PetApiTest extends TestBase{
 
     @Test
+    @Description("CreateAndGetPet test")
     void createAndGetPet(){
         long petId = ThreadLocalRandom.current().nextLong(1_000_000);
 
