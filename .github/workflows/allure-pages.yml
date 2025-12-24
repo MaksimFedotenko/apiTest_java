@@ -21,22 +21,28 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
       - name: Run Tests
-        run: mvn clean test -Dallure.results.directory=target/allure-results
+        run: mvn clean test
+
+      - name: Upload Allure Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: target/allure-results/
 
   pages:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: allure-results
           path: allure-results/
 
       - name: Generate Allure Report
-        uses: simple-elf/allure-report-action@v1.5
-        with:
-          allure_results: allure-results/
+        run: |
+          npm install -g allure-commandline
+          allure generate allure-results/ -o allure-report/ --clean
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
