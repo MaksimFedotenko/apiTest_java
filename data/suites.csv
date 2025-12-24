@@ -1,0 +1,2 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Create and get pet test","3445","createAndGetPet()","","Wed Dec 24 12:18:13 UTC 2025","passed","Wed Dec 24 12:18:17 UTC 2025","","pet.PetApiTest","pet.PetApiTest","createAndGetPet"
