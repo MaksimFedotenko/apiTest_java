@@ -18,33 +18,27 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Run Tests with Allure
-        run: |
-          mvn clean test
-          echo "=== ALLURE RESULTS ==="
-          ls -la target/allure-results/ || echo "❌ NO ALLURE RESULTS!"
+      - name: Run Tests
+        run: mvn clean test
 
-      - name: Debug Maven Output
-        if: always()
+      - name: Debug Allure Results
         run: |
-          echo "=== SUREFIRE REPORTS ==="
-          ls -la target/surefire-reports/
-          cat target/surefire-reports/*.txt || echo "No surefire reports"
+          echo "=== CHECKING ALLURE RESULTS ==="
+          ls -la target/allure-results/ || echo "❌ NO ALLURE RESULTS"
+          find target/allure-results/ -name "*.json" | head -5 || echo "No JSON files"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Generate Allure Report
         if: always()
         run: |
-          npm install -g @allure-community/allure-js@2.30.0
-          mkdir -p public
-          allure generate target/allure-results/ -o public/ --clean || echo "⚠️ No results found"
+          npx allure-commandline@2.30.0 generate target/allure-results/ -o public/ --clean || echo "⚠️ No results"
 
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/master'
+        if: success() && github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
